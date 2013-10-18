@@ -1,8 +1,7 @@
 class SimulationController < UIViewController
   attr_accessor :critters, :max_wide, :max_height, :game_timer
 
-  CRITTER_SIZE = 20
-  INITIAL_POPULATION = 3
+  INITIAL_POPULATION = 30
 
   def initWithNibName(name, bundle: bundle)
     super
@@ -21,8 +20,8 @@ class SimulationController < UIViewController
   def viewDidLoad
     super
 
-    @max_wide = self.view.frame.size.width / CRITTER_SIZE
-    @max_height = self.view.frame.size.height / CRITTER_SIZE
+    @max_wide = self.view.frame.size.width / Critter::CRITTER_SIZE
+    @max_height = self.view.frame.size.height / Critter::CRITTER_SIZE
 
     self.view.backgroundColor = UIColor.whiteColor
 
@@ -32,7 +31,7 @@ class SimulationController < UIViewController
   def live_loop
     game_timer = EM.add_periodic_timer 0.25 do
       @critters.each do |critter|
-        critter.tick(@critters)
+        critter.tick(@critters, self)
       end
     end
   end
@@ -48,6 +47,16 @@ class SimulationController < UIViewController
     end
 
     live_loop
+  end
+
+  def kill_child(child)
+    @critters.delete(child)
+    child.removeFromSuperview
+  end
+
+  def add_child(child)
+    @critters << child
+    self.view.addSubview(child.view)
   end
 
   def random_x
@@ -70,7 +79,7 @@ class SimulationController < UIViewController
     end
 
     view = UIView.alloc.initWithFrame(
-      CGRect.new([x * CRITTER_SIZE, y * CRITTER_SIZE], [CRITTER_SIZE,CRITTER_SIZE]))
+      CGRect.new([x * Critter::CRITTER_SIZE, y * Critter::CRITTER_SIZE], [Critter::CRITTER_SIZE,Critter::CRITTER_SIZE]))
     view.backgroundColor = UIColor.redColor
     Critter.new(x,y,view)
   end
